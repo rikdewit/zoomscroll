@@ -1,0 +1,151 @@
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap');
+
+
+html, body{
+    padding: 0;
+    margin: 0;
+    height: 100%;
+    width: 100%;
+    font-size: calc((100vmin/1000)*16);
+}
+
+body{
+    height: 10000vh;
+    background-color: white;
+}
+
+
+.panels{
+    perspective: 200rem;
+    height: 100vh;
+    width: 100vw;
+}
+
+.container{
+    transform-style: preserve-3d;
+    -webkit-transform-style: preserve-3d;
+    position: absolute;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    width: 100%;
+}
+
+.layer1{
+    position: absolute;
+    height: 100rem;
+    width: 100rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-evenly;
+
+    transform: translateZ(0rem);
+
+    
+}
+
+.layer2{
+    position: absolute;
+    /* transform-style: preserve-3d; */
+    height: 100rem;
+    width: 100rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-evenly;
+    transform: translateZ(-200rem);
+
+}
+
+.layer3{
+    position: absolute;
+    height: 100rem;
+    width: 100rem;
+    font-size: 20rem;
+    font-family: 'Bebas Neue', cursive;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transform: translateZ(-50rem) scale(0.2);
+
+}
+
+.layer4{
+    position: absolute;
+    height: 100rem;
+    width: 100rem;
+    transform: translateZ(-300rem);
+    background-color: greenyellow;
+    opacity: 100%;
+}
+
+
+.layer5{
+    position: absolute;
+    height: 100rem;
+    width: 100rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-evenly;
+    transform: translateZ(-500rem);
+
+}
+
+.background{
+    position: absolute;
+    height: 100rem;
+    width: 100rem;
+    transform: translateZ(-300rem);
+    background-color: greenyellow;
+    opacity: 100%;
+    z-index: 100;
+}
+
+
+
+.panel{
+    height: 10rem;
+    width: 10rem;
+    background-color: black;
+
+}
+
+.panel1{
+    height: 10rem;
+    width: 10rem;
+    background-color: black;
+    
+}
+
+.panel2{
+    height: 10rem;
+    width: 10rem;
+    background-color: cyan;
+    animation: rotate 5s ease 0s infinite;
+    z-index: inherit;
+
+}
+
+.panel3{
+    height: 10rem;
+    width: 10rem;
+    background-color: yellow;
+    animation: rotate 5s ease 0s infinite reverse;
+    z-index: inherit;
+
+}
+
+
+.text{
+    color: black;
+
+}
+
+@keyframes rotate{
+    0%{
+        transform: rotate(0deg);
+    }
+    100%{
+        transform: rotate(360deg);
+    }
+}
