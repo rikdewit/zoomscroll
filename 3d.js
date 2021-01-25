@@ -47,7 +47,6 @@ function init() {
     bgDom = bgrenderer.domElement;
     bgDom.style.position = "fixed";
     bgDom.style.height = "100%"
-
     bgDom.style.transform = "translate3d(0, 0, 0)";
 
 
@@ -95,6 +94,8 @@ function init() {
 
     one.position.setZ(-500)
     two.position.setZ(-1000);
+    two.scale.set(0.5, 0.5, 0.5);
+
     three.position.setZ(-1500);
     four.position.setZ(-2000);
     five.position.setZ(-2500);
