@@ -31,6 +31,8 @@ let bgrenderer;
 let bgcamera
 
 let four;
+let bgDom;
+let renderDom;
 
 init();
 
@@ -42,9 +44,12 @@ function init() {
     bgrenderer.setSize(window.innerWidth, window.innerHeight);
     document.body.appendChild(bgrenderer.domElement);
 
-    let bgDom = bgrenderer.domElement;
+    bgDom = bgrenderer.domElement;
     bgDom.style.position = "fixed";
-    bgDom.style.height = "100%";
+    bgDom.style.height = "100%"
+
+    bgDom.style.transform = "translate3d(0, 0, 0)";
+
 
 
     bgcamera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
@@ -58,10 +63,10 @@ function init() {
 
     document.body.appendChild(renderer.domElement);
 
-    let renderDom = renderer.domElement;
+    renderDom = renderer.domElement;
     renderDom.style.position = "fixed";
-    renderDom.style.height = "100%";
-
+    renderDom.style.height = "100%"
+    renderDom.style.transform = "translate3d(0, 0, 0)";
 
 
 
@@ -149,11 +154,26 @@ scroll.on("update", function (event) {
 function animate() {
     requestAnimationFrame(animate);
 
-
-
     bgrenderer.render(bgscene, camera);
 
     renderer.render(scene, camera);
 
 };
 
+
+window.addEventListener('resize', () => {
+
+    renderDom.style.width = window.innerWidth;
+    renderDom.style.height = window.innerHeight;
+
+    bgDom.style.width = window.innerWidth;
+    bgDom.style.height = window.innerHeight;
+
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    bgrenderer.setSize(window.innerWidth, window.innerHeight);
+
+
+});
