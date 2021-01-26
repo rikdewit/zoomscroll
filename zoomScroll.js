@@ -27,9 +27,9 @@ class zoomScroll {
         }
         this.camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
 
-        [this.portalRenderer, this.portalScene] = this.createRenderLayer();
-        [this.renderer, this.scene] = this.createRenderLayer();
+        [this.renderer, this.scene] = this.createRenderLayer({ main: true });
 
+        this.portalRenderLayers = [];
         this.portals = [];
 
         this.resize();
@@ -37,7 +37,7 @@ class zoomScroll {
         this.animate();
     }
 
-    createRenderLayer() {
+    createRenderLayer(options = { main: false }) {
         let scene = new THREE.Scene();
 
         let renderer = new CSS3DRenderer(this.container);
@@ -47,7 +47,17 @@ class zoomScroll {
         renderEl.style.position = "fixed";
         renderEl.style.height = "100%";
         renderEl.style.transform = "translate3d(0,0,0)";
-        this.container.appendChild(renderEl);
+        if (options.main) {
+            this.container.append(renderEl);
+            this.mainRenderLayer = renderEl;
+        } else {
+            if (this.portalRenderLayers.length) {
+                this.container.insertBefore(renderEl, this.mainRenderLayer);
+            } else {
+                this.container.prepend(renderEl);
+            }
+
+        }
 
         return [renderer, scene];
     }
@@ -55,14 +65,17 @@ class zoomScroll {
     add(element, z = -1000) {
         let obj = new CSS3DObject(element);
         obj.position.set(0, 0, z);
-        this.scene.add(obj)
+        this.scene.add(obj);
         return obj;
     }
 
     addPortal(element, z = -1000) {
+        let [renderer, scene] = this.createRenderLayer()
+        this.portalRenderLayers.push([renderer, scene]);
+
         let obj = new CSS3DObject(element);
         obj.position.set(0, 0, z);
-        this.portalScene.add(obj);
+        scene.add(obj);
         let color = getComputedStyle(element).backgroundColor;
         this.portals.push({ z: z, color: color });
         return obj;
@@ -71,9 +84,30 @@ class zoomScroll {
     animate() {
         requestAnimationFrame(() => this.animate());
         this.renderer.render(this.scene, this.camera);
-        this.portalRenderer.render(this.portalScene, this.camera);
+
+        this.portalRenderLayers.forEach((layer) => {
+            let renderer = layer[0];
+            let scene = layer[1];//to improve: array unpacking
+            renderer.render(scene, this.camera);
+        });
     }
 
+    updateBackground(camPos) {
+        let bgColor;
+        let inPortal = false;
+        for (let i = 0; i < this.portals.length; i++) {
+            if (camPos - 100 < this.portals[i].z) {
+                bgColor = this.portals[i].color;
+                inPortal = true;
+            }
+        }
+        if (!inPortal) {
+            bgColor = "white";
+        }
+
+        document.body.style.backgroundColor = bgColor;
+
+    }
     scroll() {
         let _this = this;
         let controller = new ScrollMagic.Controller();
@@ -86,18 +120,9 @@ class zoomScroll {
         scroll.on("update", function (event) {
             let scrollPos = controller.scrollPos()
             _this.camera.position.set(0, 0, -scrollPos);
-            console.log(_this.camera.position.z);
-
-            for (let i = 0; i < _this.portals.length; i++) {
-
-                // if (_this.portals[i].z > _this.camera.position.z - 100) {
-                //     document.body.style.backgroundColor = _this.portals[i].color;
-                // } else {
-                //     document.body.style.backgroundColor = "white"
-                // }
-
-            }
-
+            let camPos = _this.camera.position.z;
+            console.log(camPos);
+            _this.updateBackground(camPos);
         });
     }
 
@@ -108,14 +133,17 @@ class zoomScroll {
             this.camera.updateProjectionMatrix();
 
             this.renderer.setSize(window.innerWidth, window.innerHeight);
-            this.portalRenderer.setSize(window.innerWidth, window.innerHeight)
 
-
+            this.portalRenderLayers.forEach((layer) => {
+                let renderer = layer[0];
+                renderer.setSize(window.innerWidth, window.innerHeight)
+            });
         });
     }
 }
 
 let scene = new zoomScroll();
+
 
 scene.add(layer1, - 500);
 scene.add(layer2, - 1000);
