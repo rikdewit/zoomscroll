@@ -7,33 +7,25 @@ html, body{
     height: 100%;
     width: 100%;
     font-size: calc((100vmin/1000)*16);
-
-
 }
 
 body{
     height: 10000vh;
     background-color: white;
-    overflow-y: auto;
 }
 
 
-.panels{
-    /* perspective: 200rem; */
-    height: 100%;
-    width: 100%;
-    display: none;
-}
 
-.container{
-    /* transform-style: preserve-3d;
-    -webkit-transform-style: preserve-3d; */
+
+.zoomScroll{
     position: absolute;
     display: flex;
     justify-content: center;
     align-items: center;
     height: 100%;
     width: 100%;
+    /* display: none; */
+
 }
 
 .layer1{
@@ -43,7 +35,6 @@ body{
     align-items: center;
     justify-content: space-evenly;
 
-    /* transform: translateZ(0rem); */
 
     
 }
@@ -94,10 +85,14 @@ body{
     position: absolute;
     height: 100rem;
     width: 100rem;
-    /* transform: translateZ(-300rem); */
     background-color: greenyellow;
-    opacity: 100%;
-    z-index: 100;
+}
+
+.portal2{
+    position: absolute;
+    height: 100rem;
+    width: 100rem;
+    background-color: beige;
 }
 
 .render1{
