@@ -154,20 +154,24 @@ class zoomScroll {
             offset: 0
         }).addTo(controller);
 
+
         let _this = this;
         scroll.on("update", function (event) {
             let scrollPos = controller.scrollPos()
             _this.camera.position.set(0, 0, -scrollPos);
             let scrollSpeed = checkScrollSpeed();
+            console.log(scrollPos);
 
-            if (_this.loop && scrollPos + scrollSpeed > -_this.loop) {
+
+            if (_this.loop && scrollPos + scrollSpeed - 400 > -_this.loop) {
                 controller.scrollTo(scrollPos + _this.loop + scrollSpeed);
+
             }
 
-            // console.log(scrollPos);
-            // if (_this.loop && scrollPos == 0) {
-            //     controller.scrollTo(-_this.loop);
-            // }
+            console.log(scrollPos, scrollSpeed);
+            if (_this.loop && scrollPos + scrollSpeed < 400) {
+                controller.scrollTo(-_this.loop + scrollPos + scrollSpeed);
+            }
         });
     }
 
@@ -187,15 +191,15 @@ class zoomScroll {
     }
 }
 
-let scene = new zoomScroll({ z: -10000, depth: 3 });
+let scene = new zoomScroll({ z: -15000, depth: 3 });
 
 scene.add(".layer1", - 500);
 scene.add(".layer2", - 1500);
-scene.add(".layer5", -2500);
-scene.add(".layer3", - 5000);
+scene.add(".layer5", -4000);
+scene.add(".layer3", - 7000);
 
-scene.addPortal(".layer4", -2000);
-scene.addPortal(".portal2", -10000);
+scene.addPortal(".layer4", -5000);
+scene.addPortal(".portal2", -15000);
 
 
 
