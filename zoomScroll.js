@@ -89,7 +89,7 @@ class zoomScroll {
         this.scene.add(obj);
 
         if (this.loop && depth < this.loopDepth) {
-            this.add(query, z + loop, depth + 1);
+            this.add(query, z + this.loop, depth + 1);
         }
         return obj;
     }
@@ -109,9 +109,11 @@ class zoomScroll {
 
         scene.add(obj);
         this.portals.push({ z: z, color: color });
+        this.portals.sort((a, b) => a.z < b.z ? 1 : -1);
         if (this.loop && depth < this.loopDepth) {
-            this.addPortal(query, z + loop, depth + 1);
+            this.addPortal(query, z + this.loop, depth + 1);
         }
+        console.log(this.portals);
 
         return obj;
 
@@ -183,52 +185,17 @@ class zoomScroll {
 }
 
 let scene = new zoomScroll({ z: -10000, depth: 3 });
-let loop = -10000;
 
 scene.add(".layer1", - 500);
 scene.add(".layer2", - 1500);
 scene.add(".layer5", -2500);
 scene.add(".layer3", - 5000);
 
-
-
-
-
 scene.addPortal(".layer4", -2000);
-
-// scene.addPortal(".layer4", -12000);
-
 scene.addPortal(".portal2", -10000);
 
-// scene.addPortal(".portal2", -20000);
 
 
 
 
 
-
-
-
-
-
-
-
-
-// scene.add(".layer1", - 500 + loop);
-// scene.add(".layer2", - 1500 + loop);
-// scene.add(".layer5", -2500 + loop);
-
-// scene.add(".layer3", - 5000 + loop);
-
-
-
-
-// scene.add(".layer1", - 500 + 2 * loop);
-// scene.add(".layer2", - 1500 + 2 * loop);
-// scene.add(".layer5", -2500 + 2 * loop);
-
-// scene.add(".layer3", - 5000 + 2 * loop);
-
-// scene.addPortal(".layer4", -2000 + 2 * loop);
-
-// scene.addPortal(".portal2", -10000 + 2 * loop);
