@@ -56,23 +56,23 @@ class zoomScroll {
             } else {
                 this.container.prepend(renderEl);
             }
-
         }
-
         return [renderer, scene];
     }
 
-    add(element, z = -1000) {
+    add(query, z = -1000) {
+        let element = document.querySelector(query);
         let obj = new CSS3DObject(element);
         obj.position.set(0, 0, z);
         this.scene.add(obj);
         return obj;
     }
 
-    addPortal(element, z = -1000) {
+    addPortal(query, z = -1000) {
         let [renderer, scene] = this.createRenderLayer()
         this.portalRenderLayers.push([renderer, scene]);
 
+        let element = document.querySelector(query);
         let obj = new CSS3DObject(element);
         obj.position.set(0, 0, z);
         scene.add(obj);
@@ -90,13 +90,15 @@ class zoomScroll {
             let scene = layer[1];//to improve: array unpacking
             renderer.render(scene, this.camera);
         });
+        this.updateBackground(this.camera.position.z);
+
     }
 
     updateBackground(camPos) {
         let bgColor;
         let inPortal = false;
         for (let i = 0; i < this.portals.length; i++) {
-            if (camPos - 100 < this.portals[i].z) {
+            if (camPos < this.portals[i].z) {
                 bgColor = this.portals[i].color;
                 inPortal = true;
             }
@@ -105,6 +107,8 @@ class zoomScroll {
             bgColor = "white";
         }
 
+        let html = document.querySelector("html");
+        html.style.backgroundColor = bgColor;
         document.body.style.backgroundColor = bgColor;
 
     }
@@ -120,9 +124,6 @@ class zoomScroll {
         scroll.on("update", function (event) {
             let scrollPos = controller.scrollPos()
             _this.camera.position.set(0, 0, -scrollPos);
-            let camPos = _this.camera.position.z;
-            console.log(camPos);
-            _this.updateBackground(camPos);
         });
     }
 
@@ -145,12 +146,21 @@ class zoomScroll {
 let scene = new zoomScroll();
 
 
-scene.add(layer1, - 500);
-scene.add(layer2, - 1000);
-scene.add(layer3, - 1500);
-scene.add(layer5, -2500);
-scene.addPortal(layer4, -2000);
-scene.addPortal(portal2, -3500);
+scene.add(".layer1", - 500);
+scene.add(".layer2", - 1500);
+scene.add(".layer5", -2500);
+
+scene.add(".layer3", - 5000);
+
+scene.addPortal(".layer4", -2000);
+
+scene.addPortal(".portal2", -7000);
+
+
+
+
+
+
 
 
 
