@@ -113,10 +113,8 @@ class zoomScroll {
         if (this.loop && depth < this.loopDepth) {
             this.addPortal(query, z + this.loop, depth + 1);
         }
-        console.log(this.portals);
 
         return obj;
-
     }
 
     animate() {
@@ -152,19 +150,24 @@ class zoomScroll {
     scroll() {
         let controller = new ScrollMagic.Controller();
         const scroll = new ScrollMagic.Scene({
-            duration: Infinity,
+            duration: 0,
             offset: 0
         }).addTo(controller);
-
 
         let _this = this;
         scroll.on("update", function (event) {
             let scrollPos = controller.scrollPos()
             _this.camera.position.set(0, 0, -scrollPos);
+            let scrollSpeed = checkScrollSpeed();
 
-            if (_this.loop && -scrollPos < _this.loop) {
-                controller.scrollTo(0);
+            if (_this.loop && scrollPos + scrollSpeed > -_this.loop) {
+                controller.scrollTo(scrollPos + _this.loop + scrollSpeed);
             }
+
+            // console.log(scrollPos);
+            // if (_this.loop && scrollPos == 0) {
+            //     controller.scrollTo(-_this.loop);
+            // }
         });
     }
 
@@ -196,6 +199,30 @@ scene.addPortal(".portal2", -10000);
 
 
 
+var checkScrollSpeed = (function (settings) {
+    settings = settings || {};
+
+    var lastPos, newPos, timer, delta,
+        delay = settings.delay || 50; // in "ms" (higher means lower fidelity )
+
+    function clear() {
+        lastPos = null;
+        delta = 0;
+    }
+
+    clear();
+
+    return function () {
+        newPos = window.scrollY;
+        if (lastPos != null) { // && newPos < maxScroll 
+            delta = newPos - lastPos;
+        }
+        lastPos = newPos;
+        clearTimeout(timer);
+        timer = setTimeout(clear, delay);
+        return delta;
+    };
+})();
 
 
 
