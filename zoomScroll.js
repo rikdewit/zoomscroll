@@ -33,7 +33,7 @@ class zoomScroll {
         this.portals = [];
 
         this.resize();
-        this.scroll();
+        this.scroll({ debug: true });
         this.animate();
     }
 
@@ -112,19 +112,47 @@ class zoomScroll {
         document.body.style.backgroundColor = bgColor;
 
     }
-    scroll() {
-        let _this = this;
+    scroll(options) {
+        let debug = options.debug;
         let controller = new ScrollMagic.Controller();
-
         const scroll = new ScrollMagic.Scene({
             duration: Infinity,
             offset: 0
         }).addTo(controller);
 
+        if (debug) {
+            var debugEl = this.createScrollDebug();
+        }
+
+        let _this = this;
         scroll.on("update", function (event) {
             let scrollPos = controller.scrollPos()
             _this.camera.position.set(0, 0, -scrollPos);
+            if (debug) {
+                debugEl.innerText = -scrollPos;
+            }
         });
+    }
+
+    createScrollDebug() {
+        let debugElement = document.createElement("div");
+        debugElement.className = "scrollDebug";
+        debugElement.style.padding = "0.2rem";
+        // debugElement.style.height = "2rem";
+        debugElement.style.backgroundColor = "white"
+        debugElement.style.mixBlendMode = "difference";
+        debugElement.style.fontSize = "3rem";
+        debugElement.style.position = "fixed";
+
+
+        document.body.appendChild(debugElement);
+        console.log(debugElement)
+        return debugElement;
+
+    }
+    scrollDebug(pos) {
+        let el = document.querySelector(".scrollDebug");
+        el.innerText = pos;
     }
 
     resize() {
