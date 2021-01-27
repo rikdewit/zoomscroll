@@ -16,7 +16,7 @@ const portal2 = document.querySelector(".portal2");
 
 
 class zoomScroll {
-    constructor(container) {
+    constructor(loopOptions = false, container) {
 
         if (container) {
             this.container = container;
@@ -31,13 +31,20 @@ class zoomScroll {
 
         this.portalRenderLayers = [];
         this.portals = [];
+        if (loopOptions) {
+            this.loop = loopOptions.z;
+            this.loopDepth = loopOptions.depth;
+        }
+        else {
+            this.loop = false;
+        }
 
         this.resize();
-        this.scroll({ debug: true });
+        this.scroll();
         this.animate();
     }
 
-    createRenderLayer(options = { main: false }) {
+    createRenderLayer(options = { main: false }, z = 0) {
         let scene = new THREE.Scene();
 
         let renderer = new CSS3DRenderer(this.container);
@@ -47,38 +54,67 @@ class zoomScroll {
         renderEl.style.position = "fixed";
         renderEl.style.height = "100%";
         renderEl.style.transform = "translate3d(0,0,0)";
+
         if (options.main) {
             this.container.append(renderEl);
             this.mainRenderLayer = renderEl;
         } else {
-            if (this.portalRenderLayers.length) {
-                this.container.insertBefore(renderEl, this.mainRenderLayer);
+            if (this.portalRenderLayers.length > 0) {
+                let placed = false;
+                for (const layer of this.portalRenderLayers) {
+                    if (z > layer[2]) {
+                        this.container.insertBefore(renderEl, layer[0].domElement);
+                        placed = true;
+                        break;
+                    }
+                }
+                if (!placed) {
+                    this.container.insertBefore(renderEl, this.portalRenderLayers[this.portalRenderLayers.length - 1][0].domElement.nextSibling);
+                }
             } else {
                 this.container.prepend(renderEl);
             }
+
+
         }
         return [renderer, scene];
     }
 
-    add(query, z = -1000) {
-        let element = document.querySelector(query);
+
+    add(query, z = -1000, depth = 0) {
+        let element = document.querySelector(query).cloneNode(true);
+
         let obj = new CSS3DObject(element);
         obj.position.set(0, 0, z);
         this.scene.add(obj);
+
+        if (this.loop && depth < this.loopDepth) {
+            this.add(query, z + loop, depth + 1);
+        }
         return obj;
     }
 
-    addPortal(query, z = -1000) {
-        let [renderer, scene] = this.createRenderLayer()
-        this.portalRenderLayers.push([renderer, scene]);
+    addPortal(query, z = -1000, depth = 0) {
+
+        let [renderer, scene] = this.createRenderLayer({ main: false }, z);
+        this.portalRenderLayers.push([renderer, scene, z]);
+        this.portalRenderLayers.sort((a, b) => a[2] < b[2] ? 1 : -1) //sort from near to far (0 to -1000 to -2000)
 
         let element = document.querySelector(query);
+        let color = getComputedStyle(element).backgroundColor;
+
+        element = element.cloneNode(true);
         let obj = new CSS3DObject(element);
         obj.position.set(0, 0, z);
+
         scene.add(obj);
-        let color = getComputedStyle(element).backgroundColor;
         this.portals.push({ z: z, color: color });
+        if (this.loop && depth < this.loopDepth) {
+            this.addPortal(query, z + loop, depth + 1);
+        }
+
         return obj;
+
     }
 
     animate() {
@@ -91,7 +127,6 @@ class zoomScroll {
             renderer.render(scene, this.camera);
         });
         this.updateBackground(this.camera.position.z);
-
     }
 
     updateBackground(camPos) {
@@ -112,47 +147,23 @@ class zoomScroll {
         document.body.style.backgroundColor = bgColor;
 
     }
-    scroll(options) {
-        let debug = options.debug;
+    scroll() {
         let controller = new ScrollMagic.Controller();
         const scroll = new ScrollMagic.Scene({
             duration: Infinity,
             offset: 0
         }).addTo(controller);
 
-        if (debug) {
-            var debugEl = this.createScrollDebug();
-        }
 
         let _this = this;
         scroll.on("update", function (event) {
             let scrollPos = controller.scrollPos()
             _this.camera.position.set(0, 0, -scrollPos);
-            if (debug) {
-                debugEl.innerText = -scrollPos;
+
+            if (_this.loop && -scrollPos < _this.loop) {
+                controller.scrollTo(0);
             }
         });
-    }
-
-    createScrollDebug() {
-        let debugElement = document.createElement("div");
-        debugElement.className = "scrollDebug";
-        debugElement.style.padding = "0.2rem";
-        // debugElement.style.height = "2rem";
-        debugElement.style.backgroundColor = "white"
-        debugElement.style.mixBlendMode = "difference";
-        debugElement.style.fontSize = "3rem";
-        debugElement.style.position = "fixed";
-
-
-        document.body.appendChild(debugElement);
-        console.log(debugElement)
-        return debugElement;
-
-    }
-    scrollDebug(pos) {
-        let el = document.querySelector(".scrollDebug");
-        el.innerText = pos;
     }
 
     resize() {
@@ -171,18 +182,25 @@ class zoomScroll {
     }
 }
 
-let scene = new zoomScroll();
-
+let scene = new zoomScroll({ z: -10000, depth: 3 });
+let loop = -10000;
 
 scene.add(".layer1", - 500);
 scene.add(".layer2", - 1500);
 scene.add(".layer5", -2500);
-
 scene.add(".layer3", - 5000);
+
+
+
+
 
 scene.addPortal(".layer4", -2000);
 
-scene.addPortal(".portal2", -7000);
+// scene.addPortal(".layer4", -12000);
+
+scene.addPortal(".portal2", -10000);
+
+// scene.addPortal(".portal2", -20000);
 
 
 
@@ -193,3 +211,24 @@ scene.addPortal(".portal2", -7000);
 
 
 
+
+
+
+// scene.add(".layer1", - 500 + loop);
+// scene.add(".layer2", - 1500 + loop);
+// scene.add(".layer5", -2500 + loop);
+
+// scene.add(".layer3", - 5000 + loop);
+
+
+
+
+// scene.add(".layer1", - 500 + 2 * loop);
+// scene.add(".layer2", - 1500 + 2 * loop);
+// scene.add(".layer5", -2500 + 2 * loop);
+
+// scene.add(".layer3", - 5000 + 2 * loop);
+
+// scene.addPortal(".layer4", -2000 + 2 * loop);
+
+// scene.addPortal(".portal2", -10000 + 2 * loop);
