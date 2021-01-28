@@ -154,7 +154,7 @@ class zoomScroll {
             console.log(_this.scrolled)
 
             if (_this.loop && !_this.scrolled && scrollPos + scrollSpeed - 400 > -_this.loop) {
-                controller.scrollTo(scrollPos + _this.loop + scrollSpeed - 10);
+                controller.scrollTo(scrollPos + _this.loop + scrollSpeed);
                 _this.scrolled = true;
                 setTimeout(() => _this.scrolled = false, 100);
             }
