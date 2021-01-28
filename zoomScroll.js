@@ -38,6 +38,7 @@ class zoomScroll {
         else {
             this.loop = false;
         }
+        this.scrolled = false;
 
         this.resize();
         this.scroll();
@@ -160,17 +161,19 @@ class zoomScroll {
             let scrollPos = controller.scrollPos()
             _this.camera.position.set(0, 0, -scrollPos);
             let scrollSpeed = checkScrollSpeed();
-            console.log(scrollPos);
+            console.log(scrollPos, scrollSpeed);
+            console.log(_this.scrolled)
 
-
-            if (_this.loop && scrollPos + scrollSpeed - 400 > -_this.loop) {
-                controller.scrollTo(scrollPos + _this.loop + scrollSpeed);
-
+            if (_this.loop && !_this.scrolled && scrollPos + scrollSpeed - 400 > -_this.loop) {
+                controller.scrollTo(scrollPos + _this.loop + scrollSpeed - 10);
+                _this.scrolled = true;
+                setTimeout(() => _this.scrolled = false, 100);
             }
 
-            console.log(scrollPos, scrollSpeed);
-            if (_this.loop && scrollPos + scrollSpeed < 400) {
+            if (_this.loop && !_this.scrolled && scrollPos + scrollSpeed < 400) {
                 controller.scrollTo(-_this.loop + scrollPos + scrollSpeed);
+                _this.scrolled = true;
+                setTimeout(() => _this.scrolled = false, 100);
             }
         });
     }
