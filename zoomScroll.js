@@ -23,6 +23,10 @@ class zoomScroll {
         if (loopOptions) {
             this.loop = loopOptions.z;
             this.loopDepth = loopOptions.depth;
+
+            if (this.loop) {
+                document.body.style.height = (-this.loop + 400 + 10000 + window.innerHeight).toString() + "px";
+            }
         }
         else {
             this.loop = false;
@@ -71,15 +75,15 @@ class zoomScroll {
     }
 
 
-    add(query, z = -1000, depth = 0) {
+    add(query, x = 0, y = 0, z = -1000, depth = 0) {
         let element = document.querySelector(query).cloneNode(true);
 
         let obj = new CSS3DObject(element);
-        obj.position.set(0, 0, z);
+        obj.position.set(x, y, z);
         this.scene.add(obj);
 
         if (this.loop && depth < this.loopDepth) {
-            this.add(query, z + this.loop, depth + 1);
+            this.add(query, x, y, z + this.loop, depth + 1);
         }
         return obj;
     }
@@ -150,8 +154,8 @@ class zoomScroll {
             let scrollPos = controller.scrollPos()
             _this.camera.position.set(0, 0, -scrollPos);
             let scrollSpeed = checkScrollSpeed();
-            console.log(scrollPos, scrollSpeed);
-            console.log(_this.scrolled)
+            // console.log(scrollPos, scrollSpeed);
+            // console.log(_this.scrolled)
 
             if (_this.loop && !_this.scrolled && scrollPos + scrollSpeed - 400 > -_this.loop) {
                 controller.scrollTo(scrollPos + _this.loop + scrollSpeed);
@@ -183,15 +187,26 @@ class zoomScroll {
     }
 }
 
-let scene = new zoomScroll({ z: -15000, depth: 2 });
+let scene = new zoomScroll({ z: -25000, depth: 1 });
 
-scene.add(".layer1", - 500);
-scene.add(".layer2", - 1500);
-scene.add(".layer5", -4000);
-scene.add(".layer3", - 7000);
+scene.add(".layer1", 0, 0, - 500);
+scene.add(".layer2", 0, 0, - 1500);
+scene.add(".layer5", 0, 0, - 4000);
+scene.add(".layer3", 0, 0, - 7000);
+scene.add(".text1", 200, 0, - 3000);
+scene.add(".text1", -200, 0, - 3000);
+scene.add(".image", 0, -200, -10000);
+scene.add(".image", 0, 200, -10000);
+scene.add(".image", -400, 0, -10000);
+scene.add(".image", 400, 0, -10000);
+// scene.add(".video", 0, 0, -20000)
 
-scene.addPortal(".layer4", -5000);
+
+
+scene.addPortal(".portal1", -5000);
 scene.addPortal(".portal2", -15000);
+scene.addPortal(".portal3", -25000);
+
 
 
 

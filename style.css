@@ -35,7 +35,22 @@ body{
 }
 
 ::-webkit-scrollbar {
-    display: none;
+    /* display: none; */
+}
+
+.text1{
+    outline: black;
+    /* outline-style: solid; */
+    outline-width: 3px;
+    background: rgba(187, 187, 187, 0.413);
+    border-radius: 0.3rem;
+    font-size: 2rem;
+    height: fit-content;
+    padding: 0.08rem;
+    width: 13rem;
+    text-align: center;
+    color: black;
+    box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
 }
 
 
@@ -74,12 +89,6 @@ body{
 
 
 
-.layer4{
-    position: absolute;
-    height: 100rem;
-    width: 100rem;
-    background-color: greenyellow;
-}
 
 
 .layer5{
@@ -92,19 +101,44 @@ body{
 
 }
 
-.background{
+.video{
+    position: absolute;
+    /* height: 32rem;
+    width: 18rem; */
+}
+
+.image{
+    position: absolute;
+    width: 400px;
+    height: 200px;
+    box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
+    
+}
+
+.portal1{
     position: absolute;
     height: 100rem;
     width: 100rem;
-    background-color: greenyellow;
+    background-color: rgb(183, 230, 158);
 }
 
 .portal2{
     position: absolute;
     height: 100rem;
     width: 100rem;
-    background-color:white;
+    background-color:rgb(134, 136, 217);
+    box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
 }
+
+.portal3{
+    position: absolute;
+    height: 100rem;
+    width: 100rem;
+    background-color:white;
+    box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
+}
+
+
 
 .render1{
     position: absolute;
