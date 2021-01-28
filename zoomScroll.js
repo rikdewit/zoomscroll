@@ -4,17 +4,6 @@ import {
     CSS3DObject
 } from 'https://threejs.org/examples/jsm/renderers/CSS3DRenderer.js';
 
-
-const layer1 = document.querySelector(".layer1");
-const layer2 = document.querySelector(".layer2");
-const layer3 = document.querySelector(".layer3");
-const layer4 = document.querySelector(".layer4");
-
-const background = document.querySelector(".background");
-const layer5 = document.querySelector(".layer5");
-const portal2 = document.querySelector(".portal2");
-
-
 class zoomScroll {
     constructor(loopOptions = false, container) {
 
