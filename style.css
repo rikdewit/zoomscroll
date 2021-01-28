@@ -4,6 +4,8 @@
 html{
     overflow-y: scroll;
     -webkit-overflow-scrolling: auto;
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
 }
 html, body{
     padding: 0;
@@ -21,9 +23,6 @@ body{
 
 }
 
-
-
-
 .zoomScroll{
     position: absolute;
     display: flex;
@@ -34,6 +33,11 @@ body{
     /* display: none; */
 
 }
+
+::-webkit-scrollbar {
+    display: none;
+}
+
 
 .layer1{
     height: 100rem;

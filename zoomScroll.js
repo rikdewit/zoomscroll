@@ -194,7 +194,7 @@ class zoomScroll {
     }
 }
 
-let scene = new zoomScroll({ z: -15000, depth: 3 });
+let scene = new zoomScroll({ z: -15000, depth: 2 });
 
 scene.add(".layer1", - 500);
 scene.add(".layer2", - 1500);
