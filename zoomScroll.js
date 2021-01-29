@@ -33,6 +33,7 @@ class zoomScroll {
         }
         this.scrolled = false;
 
+        history.scrollRestoration = 'manual';
         window.scrollTo(0,400);
         this.resize();
         this.scroll();
@@ -143,29 +144,23 @@ class zoomScroll {
 
     }
     scroll() {
-        let controller = new ScrollMagic.Controller();
-        const scroll = new ScrollMagic.Scene({
-            duration: 0,
-            offset: 0
-        }).addTo(controller);
-
 
         let _this = this;
-        scroll.on("update", function (event) {
-            let scrollPos = controller.scrollPos()
+        window.addEventListener("scroll", function (event) {
+            let scrollPos = window.scrollY;
             _this.camera.position.set(0, 0, -scrollPos);
             let scrollSpeed = checkScrollSpeed();
             console.log(scrollPos, scrollSpeed);
             // console.log(_this.scrolled)
 
             if (_this.loop && !_this.scrolled && scrollPos + scrollSpeed - 400 > -_this.loop) {
-                controller.scrollTo(scrollPos + _this.loop + scrollSpeed);
+                window.scrollTo(0, scrollPos + _this.loop + scrollSpeed);
                 _this.scrolled = true;
                 setTimeout(() => _this.scrolled = false, 100);
             }
 
             if (_this.loop && !_this.scrolled && scrollPos + scrollSpeed < 400) {
-                controller.scrollTo(-_this.loop + scrollPos + scrollSpeed);
+                window.scrollTo(0, -_this.loop + scrollPos + scrollSpeed);
                 _this.scrolled = true;
                 setTimeout(() => _this.scrolled = false, 100);
             }
@@ -193,7 +188,7 @@ let scene = new zoomScroll({ z: -25000, depth: 1 });
 scene.add(".layer1", 0, 0, - 500);
 scene.add(".layer2", 0, 0, - 1500);
 scene.add(".layer5", 0, 0, - 4000);
-scene.add(".layer3", 0, 0, - 7000);
+scene.add(".layer3", 0, 1500, - 7000);
 scene.add(".text1", 200, 0, - 3000);
 scene.add(".text1", -200, 0, - 3000);
 scene.add(".image", 0, -200, -10000);
