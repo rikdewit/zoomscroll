@@ -34,7 +34,7 @@ class zoomScroll {
         this.scrolled = false;
 
         history.scrollRestoration = 'manual';
-        window.scrollTo(0,400);
+        window.scrollTo(0, 400);
         this.resize();
         this.scroll();
         this.animate();
@@ -156,13 +156,13 @@ class zoomScroll {
             if (_this.loop && !_this.scrolled && scrollPos + scrollSpeed - 400 > -_this.loop) {
                 window.scrollTo(0, scrollPos + _this.loop + scrollSpeed);
                 _this.scrolled = true;
-                setTimeout(() => _this.scrolled = false, 100);
+                setTimeout(() => _this.scrolled = false, 10);
             }
 
             if (_this.loop && !_this.scrolled && scrollPos + scrollSpeed < 400) {
                 window.scrollTo(0, -_this.loop + scrollPos + scrollSpeed);
                 _this.scrolled = true;
-                setTimeout(() => _this.scrolled = false, 100);
+                setTimeout(() => _this.scrolled = false, 10);
             }
         });
     }
@@ -183,7 +183,7 @@ class zoomScroll {
     }
 }
 
-let scene = new zoomScroll({ z: -25000, depth: 1 });
+let scene = new zoomScroll({ z: -25000, depth: 2 });
 
 scene.add(".layer1", 0, 0, - 500);
 scene.add(".layer2", 0, 0, - 1500);
