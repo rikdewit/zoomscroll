@@ -33,6 +33,7 @@ class zoomScroll {
         }
         this.scrolled = false;
 
+        window.scrollTo(0,400);
         this.resize();
         this.scroll();
         this.animate();
@@ -127,7 +128,7 @@ class zoomScroll {
         let bgColor;
         let inPortal = false;
         for (let i = 0; i < this.portals.length; i++) {
-            if (camPos < this.portals[i].z) {
+            if (camPos <= this.portals[i].z) {
                 bgColor = this.portals[i].color;
                 inPortal = true;
             }
@@ -154,7 +155,7 @@ class zoomScroll {
             let scrollPos = controller.scrollPos()
             _this.camera.position.set(0, 0, -scrollPos);
             let scrollSpeed = checkScrollSpeed();
-            // console.log(scrollPos, scrollSpeed);
+            console.log(scrollPos, scrollSpeed);
             // console.log(_this.scrolled)
 
             if (_this.loop && !_this.scrolled && scrollPos + scrollSpeed - 400 > -_this.loop) {
