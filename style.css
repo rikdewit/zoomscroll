@@ -86,33 +86,6 @@ body{
     justify-content: space-evenly;
 }
 
-.portalframe1{
-    position: absolute;
-    height: 200rem;
-    width: 200rem;
-    background-color: white;
-    clip-path: polygon(0% 0%, 0% 100%, 25% 100%, 25% 25%, 75% 25%, 75% 75%, 25% 75%, 25% 100%, 100% 100%, 100% 0%);
-}
-
-.portalframe2{
-    position: absolute;
-    height: 200rem;
-    width: 200rem;
-    background-color: rgb(183, 230, 158);
-    clip-path: polygon(0% 0%, 0% 100%, 25% 100%, 25% 25%, 75% 25%, 75% 75%, 25% 75%, 25% 100%, 100% 100%, 100% 0%);
-}
-
-.portalframe3{
-    position: absolute;
-    height: 200rem;
-    width: 200rem;
-    background-color:rgb(134, 136, 217);
-    clip-path: polygon(0% 0%, 0% 100%, 25% 100%, 25% 25%, 75% 25%, 75% 75%, 25% 75%, 25% 100%, 100% 100%, 100% 0%);
-}
-
-
-
-
 .layer5{
     position: absolute;
     height: 100rem;
