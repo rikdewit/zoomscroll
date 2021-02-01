@@ -1,8 +1,8 @@
-import * as THREE from 'https://unpkg.com/three/build/three.module.js';
+import * as THREE from '../three/three.module.js';
 import {
     CSS3DRenderer,
     CSS3DObject
-} from 'https://threejs.org/examples/jsm/renderers/CSS3DRenderer.js';
+} from '../three/CSS3DRenderer.js';
 
 class zoomScroll {
     constructor(loopOptions = false, container) {
@@ -32,6 +32,7 @@ class zoomScroll {
             this.loop = false;
         }
         this.scrolled = false;
+        this.portalFrames = 0;
 
         history.scrollRestoration = 'manual';
         window.scrollTo(0, 400);
@@ -99,8 +100,8 @@ class zoomScroll {
         let element = document.querySelector(query);
         let color = getComputedStyle(element).backgroundColor;
 
-        element = element.cloneNode(true);
-        let obj = new CSS3DObject(element);
+        let cloned = element.cloneNode(true);
+        let obj = new CSS3DObject(cloned);
         obj.position.set(0, 0, z);
 
         scene.add(obj);
@@ -110,7 +111,51 @@ class zoomScroll {
             this.addPortal(query, z + this.loop, depth + 1);
         }
 
+        let portalSize = getComputedStyle(element).width;
+        this.addPortalFrame(z, portalSize, 100);
+
         return obj;
+    }
+
+    addPortalFrame(z, portalSizePx, frameBorder) {
+
+        if (z >= this.loop) {
+            let fontSize = parseFloat(window.getComputedStyle(document.body).getPropertyValue('font-size'));
+            let portalSize = parseFloat(portalSizePx, 10) / fontSize;
+            console.log(parseFloat(portalSizePx) / fontSize)
+            let leftLine = frameBorder;
+            let rightLine = portalSize + leftLine;
+
+            let portalFrame = document.createElement("div");
+            portalFrame.className = `portalFrame${this.portalFrames}`;
+            console.log(2 * frameBorder + portalSize)
+            portalFrame.style.width = 2 * frameBorder + portalSize + "rem";
+            portalFrame.style.height = 2 * frameBorder + portalSize + "rem";
+            portalFrame.style.position = "absolute";
+            portalFrame.style.clipPath = `polygon(0% 0%, 0% 100%, ${leftLine}rem 100%, ${leftLine}rem ${leftLine}rem, ${rightLine}rem ${leftLine}rem, ${rightLine}rem ${rightLine}rem, ${leftLine}rem ${rightLine}rem, ${leftLine}rem 100%, 100% 100%, 100% 0%)`
+
+            let color;
+            if (z <= this.portals[0].z) {
+                color = "white";
+            }
+
+            for (let i = 1; i < this.portals.length - 1; i++) {
+
+                if (z <= this.portals[i].z) {
+                    color = this.portals[i - 1].color;
+                }
+            }
+
+            portalFrame.style.backgroundColor = color;
+
+            document.body.append(portalFrame);
+            this.add(".portalFrame" + this.portalFrames, 0, 0, z);
+            this.portalFrames += 1;
+
+            portalFrame.style.display = "none";
+        }
+
+
     }
 
     animate() {
@@ -143,6 +188,7 @@ class zoomScroll {
         document.body.style.backgroundColor = bgColor;
 
     }
+
     scroll() {
 
         let _this = this;
@@ -150,7 +196,7 @@ class zoomScroll {
             let scrollPos = window.scrollY;
             _this.camera.position.set(0, 0, -scrollPos);
             let scrollSpeed = checkScrollSpeed();
-            console.log(scrollPos, scrollSpeed);
+            // console.log(scrollPos, scrollSpeed);
             // console.log(_this.scrolled)
 
             if (_this.loop && !_this.scrolled && scrollPos + scrollSpeed - 400 > -_this.loop) {
@@ -183,18 +229,18 @@ class zoomScroll {
     }
 }
 
-let scene = new zoomScroll({ z: -25000, depth: 2 });
+let scene = new zoomScroll({ z: -25000, depth: 1 });
 
 scene.add(".layer1", 0, 0, - 500);
 scene.add(".layer2", 0, 0, - 1500);
-scene.add(".layer5", 0, 0, - 4000);
-scene.add(".layer3", 0, 1500, - 7000);
-scene.add(".text1", 200, 0, - 3000);
-scene.add(".text1", -200, 0, - 3000);
-scene.add(".image", 0, -200, -10000);
-scene.add(".image", 0, 200, -10000);
-scene.add(".image", -400, 0, -10000);
-scene.add(".image", 400, 0, -10000);
+scene.add(".layer5", 1700, 0, - 7000);
+scene.add(".layer3", 0, 1700, - 7000);
+// scene.add(".text1", 200, 0, - 3000);
+// scene.add(".text1", -200, 0, - 3000);
+// scene.add(".image", 0, -200, -10000);
+// scene.add(".image", 0, 200, -10000);
+// scene.add(".image", -400, 0, -10000);
+// scene.add(".image", 400, 0, -10000);
 // scene.add(".video", 0, 0, -20000)
 
 
