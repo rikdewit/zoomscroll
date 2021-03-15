@@ -14,12 +14,14 @@ class zoomScroll {
             this.container.className = "zoomScroll";
             document.body.prepend(this.container);
         }
-        this.camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        this.camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 100000);
 
-        [this.renderer, this.scene] = this.createRenderLayer({ main: true });
+        // [this.renderer, this.scene] = this.createRenderLayer({ main: true });
 
         this.portalRenderLayers = [];
         this.portals = [];
+        this.contentRenderLayers = [];
+
         if (loopOptions) {
             this.loop = loopOptions.z;
             this.loopDepth = loopOptions.depth;
@@ -33,6 +35,55 @@ class zoomScroll {
         }
         this.scrolled = false;
         this.portalFrames = 0;
+        this.count = 0;
+
+
+        // this.ballScene = new THREE.Scene();
+        // this.ballRenderer = new THREE.WebGLRenderer({ alpha: true });
+        // let renderEl = this.ballRenderer.domElement;
+        // renderEl.style.position = "fixed";
+        // renderEl.style.height = "100%";
+        // renderEl.style.transform = "translate3d(0,0,0)";
+        // this.ballRenderer.setClearColor(0x000000, 0);
+        // this.ballRenderer.setPixelRatio(window.devicePixelRatio);
+        // this.ballRenderer.setSize(window.innerWidth, window.innerHeight);
+        // // this.ballRenderer.shadowMap.enabled = true;
+        // // this.ballRenderer.shadowMap.type = THREE.PCFSoftShadowMap; // default THREE.PCFShadowMap
+        // // this.container.appendChild(renderEl);
+
+
+
+        // let frameBorder = 800;
+        // let portalSize = 1333;
+        // let leftLine = frameBorder;
+        // let rightLine = portalSize + leftLine;
+        // let end = rightLine + leftLine;
+
+        // var coordinatesList = [
+        //     new THREE.Vector3(0, 0, 0),
+        //     new THREE.Vector3(0, end, 0),
+        //     new THREE.Vector3(leftLine, end, 0),
+        //     new THREE.Vector3(leftLine, leftLine, 0),
+        //     new THREE.Vector3(rightLine, leftLine, 0),
+
+
+        //     new THREE.Vector3(rightLine, rightLine, 0),
+        //     new THREE.Vector3(leftLine, rightLine, 0),
+        //     new THREE.Vector3(leftLine, end, 0),
+        //     new THREE.Vector3(end, end, 0),
+        //     new THREE.Vector3(end, 0, 0)
+        // ];
+
+
+        // var geomShape = new THREE.ShapeBufferGeometry(new THREE.Shape(coordinatesList));
+        // var matShape = new THREE.MeshBasicMaterial();
+        // matShape.color.set('white')
+        // matShape.opacity = 1;
+        // matShape.blending = THREE.AdditiveBlending;
+        // var shape = new THREE.Mesh(geomShape, matShape);
+        // shape.position.set(-end / 2, -end / 2, -5000)
+        // this.ballScene.add(shape);
+
 
         history.scrollRestoration = 'manual';
         window.scrollTo(0, 400);
@@ -41,50 +92,81 @@ class zoomScroll {
         this.animate();
     }
 
-    createRenderLayer(options = { main: false }, z = 0) {
-        let scene = new THREE.Scene();
 
-        let renderer = new CSS3DRenderer(this.container);
-        renderer.setSize(window.innerWidth, window.innerHeight);
+    createRenderLayer(options = { portalFrame: false, depth: 0 }, z = 0) {
+        let scene, renderer, renderEl;
+        scene = new THREE.Scene();
 
-        let renderEl = renderer.domElement;
+        if (!options.portalFrame) {
+            renderer = new CSS3DRenderer(this.container);
+        } else {
+            renderer = new THREE.WebGLRenderer({ alpha: true });
+            renderer.setClearColor(0x000000, 0);
+            renderer.setPixelRatio(window.devicePixelRatio);
+            renderer.shadowMap.enabled = true;
+            // renderer.shadowMap.type = THREE.PCFSoftShadowMap; // default THREE.PCFShadowMap
+        }
+        renderEl = renderer.domElement;
         renderEl.style.position = "fixed";
         renderEl.style.height = "100%";
         renderEl.style.transform = "translate3d(0,0,0)";
+        renderer.setSize(window.innerWidth, window.innerHeight);
 
-        if (options.main) {
-            this.container.append(renderEl);
-            this.mainRenderLayer = renderEl;
-        } else {
-            if (this.portalRenderLayers.length > 0) {
-                let placed = false;
-                for (const layer of this.portalRenderLayers) {
-                    if (z > layer[2]) {
-                        this.container.insertBefore(renderEl, layer[0].domElement);
-                        placed = true;
-                        break;
-                    }
-                }
-                if (!placed) {
-                    this.container.insertBefore(renderEl, this.portalRenderLayers[this.portalRenderLayers.length - 1][0].domElement.nextSibling);
-                }
-            } else {
-                this.container.prepend(renderEl);
-            }
+        return { renderer: renderer, scene: scene, element: renderEl };
+    }
 
-
+    renderLayers() {
+        console.log(this.contentRenderLayers);
+        for (const layer of this.portalRenderLayers) {
+            this.container.append(layer.element);
         }
-        return [renderer, scene];
+        for (const layer of this.contentRenderLayers) {
+            this.container.append(layer.element);
+        }
+
     }
 
 
     add(query, x = 0, y = 0, z = -1000, depth = 0) {
         let element = document.querySelector(query).cloneNode(true);
-
         let obj = new CSS3DObject(element);
         obj.position.set(x, y, z);
-        this.scene.add(obj);
+        // console.log(this.contents)
 
+        let layer;
+        for (let i = 0; i < this.contentRenderLayers.length; i++) {
+            let renderLayer = this.contentRenderLayers[i];
+            if (z < this.contentRenderLayers[i].start && z > this.contentRenderLayers[i].end) {
+                layer = renderLayer;
+                break;
+            }
+        }
+        let start;
+        let end;
+        if (layer) {
+            layer.scene.add(obj);
+            start = layer.start
+        } else {
+            for (let i = 0; i < this.portals.length; i++) {
+                if (z < this.portals[i].z) {
+                    start = this.portals[i].z + this.loop * depth - 1;
+                    end = this.portals[i + 1].z + this.loop * depth;
+                    break;
+                } else {
+                    start = 0 + this.loop * depth - 1;
+                    end = this.portals[0].z + this.loop * depth;
+                }
+            }
+
+
+            const { renderer, scene, element: renderEl } = this.createRenderLayer({ portalFrame: false }, start);
+            scene.add(obj);
+
+            this.contentRenderLayers.push({ renderer: renderer, scene: scene, element: renderEl, start: start, end: end });
+            this.contentRenderLayers.sort((a, b) => a.start > b.start ? 1 : -1);
+        }
+
+        // adding duplicates of objects in looped renders
         if (this.loop && depth < this.loopDepth) {
             this.add(query, x, y, z + this.loop, depth + 1);
         }
@@ -93,9 +175,8 @@ class zoomScroll {
 
     addPortal(query, z = -1000, depth = 0) {
 
-        let [renderer, scene] = this.createRenderLayer({ main: false }, z);
-        this.portalRenderLayers.push([renderer, scene, z]);
-        this.portalRenderLayers.sort((a, b) => a[2] < b[2] ? 1 : -1) //sort from near to far (0 to -1000 to -2000)
+        const { renderer, scene, element: renderEl } = this.createRenderLayer({ portalFrame: false, depth: depth }, z);
+
 
         let element = document.querySelector(query);
         let color = getComputedStyle(element).backgroundColor;
@@ -104,67 +185,73 @@ class zoomScroll {
         let obj = new CSS3DObject(cloned);
         obj.position.set(0, 0, z);
 
+        this.portalRenderLayers.push({ renderer: renderer, scene: scene, element: renderEl, z: z });
+        this.portalRenderLayers.sort((a, b) => a.z < b.z ? 1 : -1) //sort from near to far (0 to -1000 to -2000)
+
         scene.add(obj);
-        this.portals.push({ z: z, color: color });
+        this.portals.push({ z: z, color: color, element: obj });
         this.portals.sort((a, b) => a.z < b.z ? 1 : -1);
         if (this.loop && depth < this.loopDepth) {
             this.addPortal(query, z + this.loop, depth + 1);
         }
 
-        let portalSize = getComputedStyle(element).width;
-        this.addPortalFrame(z, portalSize, 100);
+        // let portalSize = getComputedStyle(element).width;
+        console.log(z)
+        if (this.count == 0) {
+            this.addPortalFrame(z, 1333, 1333);
+        }
+        this.count += 1;
 
         return obj;
     }
 
-    addPortalFrame(z, portalSizePx, frameBorder) {
+    addPortalFrame(z, portalSize, frameBorder) {
+        let leftLine = frameBorder;
+        let rightLine = portalSize + leftLine;
+        let end = rightLine + leftLine;
 
-        if (z >= this.loop) {
-            let fontSize = parseFloat(window.getComputedStyle(document.body).getPropertyValue('font-size'));
-            let portalSize = parseFloat(portalSizePx, 10) / fontSize;
-            console.log(parseFloat(portalSizePx) / fontSize)
-            let leftLine = frameBorder;
-            let rightLine = portalSize + leftLine;
+        var coordinatesList = [
+            new THREE.Vector3(0, 0, 0),
+            new THREE.Vector3(0, end, 0),
+            new THREE.Vector3(leftLine, end, 0),
+            new THREE.Vector3(leftLine, leftLine, 0),
+            new THREE.Vector3(rightLine, leftLine, 0),
 
-            let portalFrame = document.createElement("div");
-            portalFrame.className = `portalFrame${this.portalFrames}`;
-            console.log(2 * frameBorder + portalSize)
-            portalFrame.style.width = 2 * frameBorder + portalSize + "rem";
-            portalFrame.style.height = 2 * frameBorder + portalSize + "rem";
-            portalFrame.style.position = "absolute";
-            portalFrame.style.clipPath = `polygon(0% 0%, 0% 100%, ${leftLine}rem 100%, ${leftLine}rem ${leftLine}rem, ${rightLine}rem ${leftLine}rem, ${rightLine}rem ${rightLine}rem, ${leftLine}rem ${rightLine}rem, ${leftLine}rem 100%, 100% 100%, 100% 0%)`
 
-            let color;
-            if (z <= this.portals[0].z) {
-                color = "white";
-            }
+            new THREE.Vector3(rightLine, rightLine, 0),
+            new THREE.Vector3(leftLine, rightLine, 0),
+            new THREE.Vector3(leftLine, end, 0),
+            new THREE.Vector3(end, end, 0),
+            new THREE.Vector3(end, 0, 0)
+        ];
 
-            for (let i = 1; i < this.portals.length - 1; i++) {
 
-                if (z <= this.portals[i].z) {
-                    color = this.portals[i - 1].color;
-                }
-            }
+        var geomShape = new THREE.ShapeBufferGeometry(new THREE.Shape(coordinatesList));
+        var matShape = new THREE.MeshBasicMaterial();
+        matShape.color.set('white')
+        matShape.opacity = 1;
+        matShape.blending = THREE.AdditiveBlending;
+        var shape = new THREE.Mesh(geomShape, matShape);
+        shape.position.set(-end / 2, -end / 2, -5000)
 
-            portalFrame.style.backgroundColor = color;
+        const { renderer, scene, element: renderEl } = this.createRenderLayer({ portalFrame: true }, z);
+        scene.add(shape);
 
-            document.body.append(portalFrame);
-            this.add(".portalFrame" + this.portalFrames, 0, 0, z);
-            this.portalFrames += 1;
-
-            portalFrame.style.display = "none";
-        }
-
+        this.contentRenderLayers.push({ renderer: renderer, scene: scene, element: renderEl, start: z, end: z });
+        this.contentRenderLayers.sort((a, b) => a.start > b.start ? 1 : -1);
 
     }
 
     animate() {
         requestAnimationFrame(() => this.animate());
-        this.renderer.render(this.scene, this.camera);
+        // this.ballRenderer.render(this.ballScene, this.camera);
+        this.contentRenderLayers.forEach((layer) => {
+            const { renderer, scene } = layer;
+            renderer.render(scene, this.camera);
+        });
 
         this.portalRenderLayers.forEach((layer) => {
-            let renderer = layer[0];
-            let scene = layer[1];//to improve: array unpacking
+            const { renderer, scene } = layer;
             renderer.render(scene, this.camera);
         });
         this.updateBackground(this.camera.position.z);
@@ -229,25 +316,29 @@ class zoomScroll {
     }
 }
 
-let scene = new zoomScroll({ z: -25000, depth: 1 });
-
-scene.add(".layer1", 0, 0, - 500);
-scene.add(".layer2", 0, 0, - 1500);
-scene.add(".layer5", 1700, 0, - 7000);
-scene.add(".layer3", 0, 1700, - 7000);
-// scene.add(".text1", 200, 0, - 3000);
-// scene.add(".text1", -200, 0, - 3000);
-// scene.add(".image", 0, -200, -10000);
-// scene.add(".image", 0, 200, -10000);
-// scene.add(".image", -400, 0, -10000);
-// scene.add(".image", 400, 0, -10000);
-// scene.add(".video", 0, 0, -20000)
-
+let scene = new zoomScroll({ z: -25000, depth: 0 });
 
 
 scene.addPortal(".portal1", -5000);
 scene.addPortal(".portal2", -15000);
 scene.addPortal(".portal3", -25000);
+
+scene.add(".layer1", 0, 0, - 1000);
+scene.add(".layer2", 0, 0, - 1500);
+scene.add(".layer5", 1700, 0, - 7000);
+scene.add(".layer3", 0, 1700, - 7000);
+// scene.add(".text1", 200, 0, - 3000);
+// scene.add(".text1", -200, 0, - 3000);
+scene.add(".image", 0, -200, -10000);
+scene.add(".image", 0, 200, -10000);
+scene.add(".image", -400, 0, -20000);
+scene.add(".image", 400, 0, -20000);
+// scene.add(".video", 0, 0, -20000)
+
+scene.renderLayers();
+
+
+
 
 
 
