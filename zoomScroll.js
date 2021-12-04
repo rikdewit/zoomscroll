@@ -14,7 +14,7 @@ class zoomScroll {
             this.container.className = "zoomScroll";
             document.body.prepend(this.container);
         }
-        this.camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 100000);
+        this.camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
 
         // [this.renderer, this.scene] = this.createRenderLayer({ main: true });
 
@@ -316,17 +316,24 @@ class zoomScroll {
     }
 }
 
-let scene = new zoomScroll({ z: -25000, depth: 0 });
+let scene = new zoomScroll({ z: -25000, depth: 1 });
 
 
 scene.addPortal(".portal1", -5000);
 scene.addPortal(".portal2", -15000);
 scene.addPortal(".portal3", -25000);
 
+
 scene.add(".layer1", 0, 0, - 1000);
 scene.add(".layer2", 0, 0, - 1500);
+
+scene.add(".portal1-clip", 0, 0, -5001);
+
 scene.add(".layer5", 1700, 0, - 7000);
+
 scene.add(".layer3", 0, 1700, - 7000);
+
+
 // scene.add(".text1", 200, 0, - 3000);
 // scene.add(".text1", -200, 0, - 3000);
 scene.add(".image", 0, -200, -10000);
