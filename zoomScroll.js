@@ -14,9 +14,8 @@ class zoomScroll {
             this.container.className = "zoomScroll";
             document.body.prepend(this.container);
         }
-        this.camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
 
-        // [this.renderer, this.scene] = this.createRenderLayer({ main: true });
+        this.portalCamera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
 
         this.portalRenderLayers = [];
         this.portals = [];
@@ -37,54 +36,6 @@ class zoomScroll {
         this.portalFrames = 0;
         this.count = 0;
 
-
-        // this.ballScene = new THREE.Scene();
-        // this.ballRenderer = new THREE.WebGLRenderer({ alpha: true });
-        // let renderEl = this.ballRenderer.domElement;
-        // renderEl.style.position = "fixed";
-        // renderEl.style.height = "100%";
-        // renderEl.style.transform = "translate3d(0,0,0)";
-        // this.ballRenderer.setClearColor(0x000000, 0);
-        // this.ballRenderer.setPixelRatio(window.devicePixelRatio);
-        // this.ballRenderer.setSize(window.innerWidth, window.innerHeight);
-        // // this.ballRenderer.shadowMap.enabled = true;
-        // // this.ballRenderer.shadowMap.type = THREE.PCFSoftShadowMap; // default THREE.PCFShadowMap
-        // // this.container.appendChild(renderEl);
-
-
-
-        // let frameBorder = 800;
-        // let portalSize = 1333;
-        // let leftLine = frameBorder;
-        // let rightLine = portalSize + leftLine;
-        // let end = rightLine + leftLine;
-
-        // var coordinatesList = [
-        //     new THREE.Vector3(0, 0, 0),
-        //     new THREE.Vector3(0, end, 0),
-        //     new THREE.Vector3(leftLine, end, 0),
-        //     new THREE.Vector3(leftLine, leftLine, 0),
-        //     new THREE.Vector3(rightLine, leftLine, 0),
-
-
-        //     new THREE.Vector3(rightLine, rightLine, 0),
-        //     new THREE.Vector3(leftLine, rightLine, 0),
-        //     new THREE.Vector3(leftLine, end, 0),
-        //     new THREE.Vector3(end, end, 0),
-        //     new THREE.Vector3(end, 0, 0)
-        // ];
-
-
-        // var geomShape = new THREE.ShapeBufferGeometry(new THREE.Shape(coordinatesList));
-        // var matShape = new THREE.MeshBasicMaterial();
-        // matShape.color.set('white')
-        // matShape.opacity = 1;
-        // matShape.blending = THREE.AdditiveBlending;
-        // var shape = new THREE.Mesh(geomShape, matShape);
-        // shape.position.set(-end / 2, -end / 2, -5000)
-        // this.ballScene.add(shape);
-
-
         history.scrollRestoration = 'manual';
         window.scrollTo(0, 400);
         this.resize();
@@ -93,30 +44,29 @@ class zoomScroll {
     }
 
 
-    createRenderLayer(options = { portalFrame: false, depth: 0 }, z = 0) {
+    createRenderLayer(options = { portal: true, depth: 0 }, z = 0) {
         let scene, renderer, renderEl;
         scene = new THREE.Scene();
 
-        if (!options.portalFrame) {
-            renderer = new CSS3DRenderer(this.container);
-        } else {
-            renderer = new THREE.WebGLRenderer({ alpha: true });
-            renderer.setClearColor(0x000000, 0);
-            renderer.setPixelRatio(window.devicePixelRatio);
-            renderer.shadowMap.enabled = true;
-            // renderer.shadowMap.type = THREE.PCFSoftShadowMap; // default THREE.PCFShadowMap
-        }
+        renderer = new CSS3DRenderer(this.container);
+
         renderEl = renderer.domElement;
         renderEl.style.position = "fixed";
         renderEl.style.height = "100%";
         renderEl.style.transform = "translate3d(0,0,0)";
         renderer.setSize(window.innerWidth, window.innerHeight);
+        let camera;
+        if (options.portal) {
+            camera = this.portalCamera;
+        } else {
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        }
 
-        return { renderer: renderer, scene: scene, element: renderEl };
+
+        return { renderer: renderer, scene: scene, element: renderEl, camera: camera };
     }
 
     renderLayers() {
-        console.log(this.contentRenderLayers);
         for (const layer of this.portalRenderLayers) {
             this.container.append(layer.element);
         }
@@ -131,7 +81,6 @@ class zoomScroll {
         let element = document.querySelector(query).cloneNode(true);
         let obj = new CSS3DObject(element);
         obj.position.set(x, y, z);
-        // console.log(this.contents)
 
         let layer;
         for (let i = 0; i < this.contentRenderLayers.length; i++) {
@@ -157,12 +106,10 @@ class zoomScroll {
                     end = this.portals[0].z + this.loop * depth;
                 }
             }
-
-
-            const { renderer, scene, element: renderEl } = this.createRenderLayer({ portalFrame: false }, start);
+            const { renderer, scene, element: renderEl, camera } = this.createRenderLayer({ portal: false }, start);
             scene.add(obj);
 
-            this.contentRenderLayers.push({ renderer: renderer, scene: scene, element: renderEl, start: start, end: end });
+            this.contentRenderLayers.push({ renderer: renderer, scene: scene, element: renderEl, start: start, end: end, camera: camera });
             this.contentRenderLayers.sort((a, b) => a.start > b.start ? 1 : -1);
         }
 
@@ -175,7 +122,7 @@ class zoomScroll {
 
     addPortal(query, z = -1000, depth = 0) {
 
-        const { renderer, scene, element: renderEl } = this.createRenderLayer({ portalFrame: false, depth: depth }, z);
+        const { renderer, scene, element: renderEl } = this.createRenderLayer({ portal: true, depth: depth }, z);
 
 
         let element = document.querySelector(query);
@@ -195,66 +142,42 @@ class zoomScroll {
             this.addPortal(query, z + this.loop, depth + 1);
         }
 
-        // let portalSize = getComputedStyle(element).width;
-        console.log(z)
-        if (this.count == 0) {
-            this.addPortalFrame(z, 1333, 1333);
-        }
-        this.count += 1;
-
         return obj;
-    }
-
-    addPortalFrame(z, portalSize, frameBorder) {
-        let leftLine = frameBorder;
-        let rightLine = portalSize + leftLine;
-        let end = rightLine + leftLine;
-
-        var coordinatesList = [
-            new THREE.Vector3(0, 0, 0),
-            new THREE.Vector3(0, end, 0),
-            new THREE.Vector3(leftLine, end, 0),
-            new THREE.Vector3(leftLine, leftLine, 0),
-            new THREE.Vector3(rightLine, leftLine, 0),
-
-
-            new THREE.Vector3(rightLine, rightLine, 0),
-            new THREE.Vector3(leftLine, rightLine, 0),
-            new THREE.Vector3(leftLine, end, 0),
-            new THREE.Vector3(end, end, 0),
-            new THREE.Vector3(end, 0, 0)
-        ];
-
-
-        var geomShape = new THREE.ShapeBufferGeometry(new THREE.Shape(coordinatesList));
-        var matShape = new THREE.MeshBasicMaterial();
-        matShape.color.set('white')
-        matShape.opacity = 1;
-        matShape.blending = THREE.AdditiveBlending;
-        var shape = new THREE.Mesh(geomShape, matShape);
-        shape.position.set(-end / 2, -end / 2, -5000)
-
-        const { renderer, scene, element: renderEl } = this.createRenderLayer({ portalFrame: true }, z);
-        scene.add(shape);
-
-        this.contentRenderLayers.push({ renderer: renderer, scene: scene, element: renderEl, start: z, end: z });
-        this.contentRenderLayers.sort((a, b) => a.start > b.start ? 1 : -1);
-
     }
 
     animate() {
         requestAnimationFrame(() => this.animate());
+        const camPos = this.portalCamera.position.z;
         // this.ballRenderer.render(this.ballScene, this.camera);
+
+
+
+
         this.contentRenderLayers.forEach((layer) => {
-            const { renderer, scene } = layer;
-            renderer.render(scene, this.camera);
+            const { renderer, scene, camera } = layer;
+            if (layer.start != -1) {
+                let portalRect = document.querySelector(".portal1").getBoundingClientRect();
+                let width = Math.min(portalRect.width, window.innerWidth);
+                let height = Math.min(portalRect.height, window.innerHeight);
+
+                console.log(window.innerHeight / height);
+                camera.zoom = window.innerHeight / height;
+                camera.updateProjectionMatrix();
+
+                renderer.setSize(width, height);
+            }
+
+
+
+            renderer.render(scene, camera);
         });
+
 
         this.portalRenderLayers.forEach((layer) => {
             const { renderer, scene } = layer;
-            renderer.render(scene, this.camera);
+            renderer.render(scene, this.portalCamera);
         });
-        this.updateBackground(this.camera.position.z);
+        this.updateBackground(camPos);
     }
 
     updateBackground(camPos) {
@@ -281,7 +204,10 @@ class zoomScroll {
         let _this = this;
         window.addEventListener("scroll", function (event) {
             let scrollPos = window.scrollY;
-            _this.camera.position.set(0, 0, -scrollPos);
+            _this.portalCamera.position.set(0, 0, -scrollPos);
+            _this.contentRenderLayers.forEach((layer) => {
+                layer.camera.position.set(0, 0, -scrollPos);
+            })
             let scrollSpeed = checkScrollSpeed();
             // console.log(scrollPos, scrollSpeed);
             // console.log(_this.scrolled)
@@ -303,15 +229,17 @@ class zoomScroll {
     resize() {
         window.addEventListener('resize', () => {
 
-            this.camera.aspect = window.innerWidth / window.innerHeight;
-            this.camera.updateProjectionMatrix();
-
-            this.renderer.setSize(window.innerWidth, window.innerHeight);
-
             this.portalRenderLayers.forEach((layer) => {
-                let renderer = layer[0];
-                renderer.setSize(window.innerWidth, window.innerHeight)
-            });
+                layer.renderer.setSize(window.innerWidth, window.innerHeight);
+            })
+            this.portalCamera.updateProjectionMatrix();
+            this.portalCamera.aspect = window.innerWidth / window.innerHeight;
+
+
+            this.contentRenderLayers.forEach((layer) => {
+                layer.camera.aspect = window.innerWidth / window.innerHeight;;
+                layer.camera.updateProjectionMatrix();
+            })
         });
     }
 }
@@ -327,7 +255,8 @@ scene.addPortal(".portal3", -25000);
 scene.add(".layer1", 0, 0, - 1000);
 scene.add(".layer2", 0, 0, - 1500);
 
-scene.add(".portal1-clip", 0, 0, -5001);
+// scene.add(".portal1-clip", 0, 0, -5001);
+// scene.add(".portal1-mask", 0, 0, -7000)
 
 scene.add(".layer5", 1700, 0, - 7000);
 
@@ -343,6 +272,8 @@ scene.add(".image", 400, 0, -20000);
 // scene.add(".video", 0, 0, -20000)
 
 scene.renderLayers();
+
+console.log(scene.contentRenderLayers);
 
 
 
