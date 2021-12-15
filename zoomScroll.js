@@ -85,7 +85,7 @@ class zoomScroll {
         let layer;
         for (let i = 0; i < this.contentRenderLayers.length; i++) {
             let renderLayer = this.contentRenderLayers[i];
-            if (z < this.contentRenderLayers[i].start && z > this.contentRenderLayers[i].end) {
+            if (z < renderLayer.start && z > renderLayer.end) {
                 layer = renderLayer;
                 break;
             }
@@ -94,18 +94,18 @@ class zoomScroll {
         let end;
         if (layer) {
             layer.scene.add(obj);
-            start = layer.start
         } else {
-            for (let i = 0; i < this.portals.length; i++) {
-                if (z < this.portals[i].z) {
-                    start = this.portals[i].z + this.loop * depth - 1;
-                    end = this.portals[i + 1].z + this.loop * depth;
+            for(let i=0; i<this.portals.length; i++){
+                let portal = this.portals[i];
+                if(z < portal.z){
+                    start = portal.z;
+                    end = this.portals[i+1].z;
+                }else{
                     break;
-                } else {
-                    start = 0 + this.loop * depth - 1;
-                    end = this.portals[0].z + this.loop * depth;
                 }
+
             }
+            console.log(start);
             const { renderer, scene, element: renderEl, camera } = this.createRenderLayer({ portal: false }, start);
             scene.add(obj);
 
@@ -156,18 +156,25 @@ class zoomScroll {
         this.contentRenderLayers.forEach((layer) => {
             const { renderer, scene, camera } = layer;
             if (layer.start != -1) {
-                let portalRect = document.querySelector(".portal1").getBoundingClientRect();
-                let width = Math.min(portalRect.width, window.innerWidth);
-                let height = Math.min(portalRect.height, window.innerHeight);
 
-                console.log(window.innerHeight / height);
-                camera.zoom = window.innerHeight / height;
-                camera.updateProjectionMatrix();
+                if(camPos > layer.start){
 
-                renderer.setSize(width, height);
+                    let portalEl = this.portals.filter((portal)=>{
+                        return portal.z == layer.start
+                    })[0].element.element
+                    
+                    let portalRect = portalEl.getBoundingClientRect();
+                    // console.log(portalRect.width > window.innerWidth)
+                    let width = Math.min(portalRect.width, window.innerWidth);
+                    let height = Math.min(portalRect.height, window.innerHeight);
+                    camera.zoom = window.innerHeight / height;
+                    console.log(camera.zoom);
+
+                    camera.updateProjectionMatrix();
+
+                    renderer.setSize(width, height);
+                }
             }
-
-
 
             renderer.render(scene, camera);
         });
@@ -250,9 +257,10 @@ let scene = new zoomScroll({ z: -25000, depth: 1 });
 scene.addPortal(".portal1", -5000);
 scene.addPortal(".portal2", -15000);
 scene.addPortal(".portal3", -25000);
+scene.addPortal(".portal3", -1);
 
 
-scene.add(".layer1", 0, 0, - 1000);
+scene.add(".layer1", -1000, 0, - 1000);
 scene.add(".layer2", 0, 0, - 1500);
 
 // scene.add(".portal1-clip", 0, 0, -5001);
@@ -260,20 +268,21 @@ scene.add(".layer2", 0, 0, - 1500);
 
 scene.add(".layer5", 1700, 0, - 7000);
 
-scene.add(".layer3", 0, 1700, - 7000);
+// scene.add(".layer3", 0, 1700, - 7000);
 
 
 // scene.add(".text1", 200, 0, - 3000);
 // scene.add(".text1", -200, 0, - 3000);
-scene.add(".image", 0, -200, -10000);
-scene.add(".image", 0, 200, -10000);
-scene.add(".image", -400, 0, -20000);
-scene.add(".image", 400, 0, -20000);
+// scene.add(".image", 0, -200, -10000);
+// scene.add(".image", 0, 200, -10000);
+scene.add(".image", -400, 0, -17000);
+// scene.add(".image", 400, 0, -20000);
 // scene.add(".video", 0, 0, -20000)
 
 scene.renderLayers();
 
 console.log(scene.contentRenderLayers);
+console.log(scene.portals)
 
 
 
